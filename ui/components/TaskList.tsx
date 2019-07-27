@@ -6,13 +6,16 @@ import {
   TasksQuery,
   TasksQueryVariables,
   TasksDocument,
-  TaskStatus
+  TaskStatus,
+  withChangeStatus,
+  ChangeStatusMutationFn
 } from '../generated/graphql';
 import Link from 'next/link';
 import { isApolloError } from 'apollo-boost';
 
 interface MutationProps {
   deleteTask?: DeleteTaskMutationFn;
+  changeStatus?: ChangeStatusMutationFn;
 }
 
 interface ExposedProps {
@@ -21,7 +24,11 @@ interface ExposedProps {
 
 type AllProps = MutationProps & ExposedProps;
 
-const TaskList: React.FunctionComponent<AllProps> = ({ tasks, deleteTask }) => {
+const TaskList: React.FunctionComponent<AllProps> = ({
+  tasks,
+  deleteTask,
+  changeStatus
+}) => {
   const deleteTaskById = async (id: number) => {
     if (deleteTask) {
       try {
@@ -57,11 +64,31 @@ const TaskList: React.FunctionComponent<AllProps> = ({ tasks, deleteTask }) => {
       }
     }
   };
+  const changeTaskStatusById = async (id: number, status: TaskStatus) => {
+    if (changeStatus) {
+      await changeStatus({
+        variables: { id, status }
+      });
+    }
+  };
   return (
     <ul>
       {tasks.map(task => {
         return (
           <li key={task.id}>
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                checked={task.status === TaskStatus.Completed}
+                onChange={e => {
+                  const newStatus = e.target.checked
+                    ? TaskStatus.Completed
+                    : TaskStatus.Active;
+                  changeTaskStatusById(task.id, newStatus);
+                }}
+              />
+              <span />
+            </label>
             <div className="title">
               <Link href={{ pathname: '/update', query: { id: task.id } }}>
                 <a>{task.title}</a>
@@ -125,11 +152,49 @@ const TaskList: React.FunctionComponent<AllProps> = ({ tasks, deleteTask }) => {
           background: #7694f5;
           color: white;
         }
+        .checkbox {
+          cursor: pointer;
+        }
+        .checkbox input {
+          cursor: pointer;
+          opacity: 0;
+          pointer-events: none;
+          position: absolute;
+        }
+        .checkbox span {
+          align-items: center;
+          border: 2px solid #7694f5;
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          height: 30px;
+          width: 30px;
+        }
+        .checkbox span:before {
+          border: solid #7694f5;
+          border-width: 0 3px 3px 0;
+          content: '';
+          display: block;
+          height: 12px;
+          opacity: 0;
+          transform: rotate(45deg);
+          width: 7px;
+        }
+        .checkbox input:checked + span:before {
+          opacity: 1;
+        }
+        .checkbox span:hover {
+          box-shadow: inset 0 0 0 2px #dde5ff;
+        }
       `}</style>
     </ul>
   );
 };
 
-export default withDeleteTask<ExposedProps, MutationProps>({
-  props: ({ mutate }) => ({ deleteTask: mutate })
-})(TaskList);
+export default withChangeStatus<ExposedProps, MutationProps>({
+  props: ({ mutate }) => ({ changeStatus: mutate })
+})(
+  withDeleteTask<ExposedProps, MutationProps>({
+    props: ({ mutate }) => ({ deleteTask: mutate })
+  })(TaskList)
+);

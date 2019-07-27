@@ -81,6 +81,17 @@ export type UpdateTaskInput = {
   status?: Maybe<TaskStatus>;
 };
 
+export type ChangeStatusMutationVariables = {
+  id: Scalars["Int"];
+  status: TaskStatus;
+};
+
+export type ChangeStatusMutation = { __typename?: "Mutation" } & {
+  changeStatus: Maybe<
+    { __typename?: "Task" } & Pick<Task, "id" | "title" | "status">
+  >;
+};
+
 export type CreateTaskMutationVariables = {
   input: CreateTaskInput;
 };
@@ -127,6 +138,56 @@ export type UpdateTaskMutation = { __typename?: "Mutation" } & {
   >;
 };
 
+export const ChangeStatusDocument = gql`
+  mutation ChangeStatus($id: Int!, $status: TaskStatus!) {
+    changeStatus(id: $id, status: $status) {
+      id
+      title
+      status
+    }
+  }
+`;
+export type ChangeStatusMutationFn = ReactApollo.MutationFn<
+  ChangeStatusMutation,
+  ChangeStatusMutationVariables
+>;
+export type ChangeStatusComponentProps = Omit<
+  ReactApollo.MutationProps<
+    ChangeStatusMutation,
+    ChangeStatusMutationVariables
+  >,
+  "mutation"
+>;
+
+export const ChangeStatusComponent = (props: ChangeStatusComponentProps) => (
+  <ReactApollo.Mutation<ChangeStatusMutation, ChangeStatusMutationVariables>
+    mutation={ChangeStatusDocument}
+    {...props}
+  />
+);
+
+export type ChangeStatusProps<TChildProps = {}> = Partial<
+  ReactApollo.MutateProps<ChangeStatusMutation, ChangeStatusMutationVariables>
+> &
+  TChildProps;
+export function withChangeStatus<TProps, TChildProps = {}>(
+  operationOptions?: ReactApollo.OperationOption<
+    TProps,
+    ChangeStatusMutation,
+    ChangeStatusMutationVariables,
+    ChangeStatusProps<TChildProps>
+  >
+) {
+  return ReactApollo.withMutation<
+    TProps,
+    ChangeStatusMutation,
+    ChangeStatusMutationVariables,
+    ChangeStatusProps<TChildProps>
+  >(ChangeStatusDocument, {
+    alias: "withChangeStatus",
+    ...operationOptions
+  });
+}
 export const CreateTaskDocument = gql`
   mutation CreateTask($input: CreateTaskInput!) {
     createTask(input: $input) {
