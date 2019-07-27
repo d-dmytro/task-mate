@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { withCreateTask, CreateTaskProps } from '../generated/graphql';
 
 interface FormState {
   title: string;
@@ -8,7 +9,16 @@ const defaultState: FormState = {
   title: ''
 };
 
-const CreateTaskForm: React.FunctionComponent = () => {
+interface ExposedProps {
+  onTaskCreated: () => void;
+}
+
+type AllProps = CreateTaskProps<ExposedProps>;
+
+const CreateTaskForm: React.FunctionComponent<AllProps> = ({
+  mutate,
+  onTaskCreated
+}) => {
   const [formState, setFormState] = useState<FormState>(defaultState);
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -16,8 +26,22 @@ const CreateTaskForm: React.FunctionComponent = () => {
       title: value
     });
   };
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (mutate) {
+      const result = await mutate({
+        variables: { input: formState }
+      });
+      if (result && result.data && result.data.createTask) {
+        setFormState({
+          title: ''
+        });
+        onTaskCreated();
+      }
+    }
+  };
   return (
-    <form>
+    <form onSubmit={onSubmit}>
       <input
         type="text"
         name="title"
@@ -51,4 +75,4 @@ const CreateTaskForm: React.FunctionComponent = () => {
   );
 };
 
-export default CreateTaskForm;
+export default withCreateTask<ExposedProps>()(CreateTaskForm);

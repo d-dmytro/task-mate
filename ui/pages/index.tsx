@@ -15,7 +15,7 @@ const IndexPage: NextPage<Props, InitialProps> = props => {
   return (
     <Layout>
       <TasksComponent variables={{ status: TaskStatus.Active }}>
-        {({ loading, error, data }) => {
+        {({ loading, error, data, refetch }) => {
           if (loading) {
             return <p>Loading.</p>;
           } else if (error) {
@@ -26,7 +26,7 @@ const IndexPage: NextPage<Props, InitialProps> = props => {
 
           return (
             <>
-              <CreateTaskForm />
+              <CreateTaskForm onTaskCreated={refetch} />
               <TaskList tasks={tasks} />
             </>
           );
