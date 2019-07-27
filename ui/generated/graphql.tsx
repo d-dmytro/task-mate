@@ -1,6 +1,6 @@
 import gql from "graphql-tag";
-import * as React from "react";
 import * as ReactApollo from "react-apollo";
+import * as React from "react";
 export type Maybe<T> = T | null;
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 /** All built-in and custom scalars, mapped to their actual values */
@@ -81,6 +81,16 @@ export type UpdateTaskInput = {
   status?: Maybe<TaskStatus>;
 };
 
+export type CreateTaskMutationVariables = {
+  input: CreateTaskInput;
+};
+
+export type CreateTaskMutation = { __typename?: "Mutation" } & {
+  createTask: Maybe<
+    { __typename?: "Task" } & Pick<Task, "id" | "title" | "status">
+  >;
+};
+
 export type TasksQueryVariables = {
   status?: Maybe<TaskStatus>;
 };
@@ -89,6 +99,53 @@ export type TasksQuery = { __typename?: "Query" } & {
   tasks: Array<{ __typename?: "Task" } & Pick<Task, "id" | "title" | "status">>;
 };
 
+export const CreateTaskDocument = gql`
+  mutation CreateTask($input: CreateTaskInput!) {
+    createTask(input: $input) {
+      id
+      title
+      status
+    }
+  }
+`;
+export type CreateTaskMutationFn = ReactApollo.MutationFn<
+  CreateTaskMutation,
+  CreateTaskMutationVariables
+>;
+export type CreateTaskComponentProps = Omit<
+  ReactApollo.MutationProps<CreateTaskMutation, CreateTaskMutationVariables>,
+  "mutation"
+>;
+
+export const CreateTaskComponent = (props: CreateTaskComponentProps) => (
+  <ReactApollo.Mutation<CreateTaskMutation, CreateTaskMutationVariables>
+    mutation={CreateTaskDocument}
+    {...props}
+  />
+);
+
+export type CreateTaskProps<TChildProps = {}> = Partial<
+  ReactApollo.MutateProps<CreateTaskMutation, CreateTaskMutationVariables>
+> &
+  TChildProps;
+export function withCreateTask<TProps, TChildProps = {}>(
+  operationOptions?: ReactApollo.OperationOption<
+    TProps,
+    CreateTaskMutation,
+    CreateTaskMutationVariables,
+    CreateTaskProps<TChildProps>
+  >
+) {
+  return ReactApollo.withMutation<
+    TProps,
+    CreateTaskMutation,
+    CreateTaskMutationVariables,
+    CreateTaskProps<TChildProps>
+  >(CreateTaskDocument, {
+    alias: "withCreateTask",
+    ...operationOptions
+  });
+}
 export const TasksDocument = gql`
   query Tasks($status: TaskStatus) {
     tasks(status: $status) {
