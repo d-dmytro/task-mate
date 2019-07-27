@@ -91,6 +91,16 @@ export type CreateTaskMutation = { __typename?: "Mutation" } & {
   >;
 };
 
+export type DeleteTaskMutationVariables = {
+  id: Scalars["Int"];
+};
+
+export type DeleteTaskMutation = { __typename?: "Mutation" } & {
+  deleteTask: Maybe<
+    { __typename?: "Task" } & Pick<Task, "id" | "title" | "status">
+  >;
+};
+
 export type TaskQueryVariables = {
   id: Scalars["Int"];
 };
@@ -161,6 +171,53 @@ export function withCreateTask<TProps, TChildProps = {}>(
     CreateTaskProps<TChildProps>
   >(CreateTaskDocument, {
     alias: "withCreateTask",
+    ...operationOptions
+  });
+}
+export const DeleteTaskDocument = gql`
+  mutation DeleteTask($id: Int!) {
+    deleteTask(id: $id) {
+      id
+      title
+      status
+    }
+  }
+`;
+export type DeleteTaskMutationFn = ReactApollo.MutationFn<
+  DeleteTaskMutation,
+  DeleteTaskMutationVariables
+>;
+export type DeleteTaskComponentProps = Omit<
+  ReactApollo.MutationProps<DeleteTaskMutation, DeleteTaskMutationVariables>,
+  "mutation"
+>;
+
+export const DeleteTaskComponent = (props: DeleteTaskComponentProps) => (
+  <ReactApollo.Mutation<DeleteTaskMutation, DeleteTaskMutationVariables>
+    mutation={DeleteTaskDocument}
+    {...props}
+  />
+);
+
+export type DeleteTaskProps<TChildProps = {}> = Partial<
+  ReactApollo.MutateProps<DeleteTaskMutation, DeleteTaskMutationVariables>
+> &
+  TChildProps;
+export function withDeleteTask<TProps, TChildProps = {}>(
+  operationOptions?: ReactApollo.OperationOption<
+    TProps,
+    DeleteTaskMutation,
+    DeleteTaskMutationVariables,
+    DeleteTaskProps<TChildProps>
+  >
+) {
+  return ReactApollo.withMutation<
+    TProps,
+    DeleteTaskMutation,
+    DeleteTaskMutationVariables,
+    DeleteTaskProps<TChildProps>
+  >(DeleteTaskDocument, {
+    alias: "withDeleteTask",
     ...operationOptions
   });
 }

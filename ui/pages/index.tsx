@@ -2,7 +2,7 @@ import React from 'react';
 import { NextPage } from 'next';
 import { TasksComponent, TaskStatus } from '../generated/graphql';
 import { Layout } from '../components/Layout';
-import { TaskList } from '../components/TaskList';
+import TaskList from '../components/TaskList';
 import CreateTaskForm from '../components/CreateTaskForm';
 
 interface InitialProps {

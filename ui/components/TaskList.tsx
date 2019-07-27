@@ -1,12 +1,62 @@
 import React from 'react';
-import { Task } from '../generated/graphql';
+import {
+  Task,
+  withDeleteTask,
+  DeleteTaskMutationFn,
+  TasksQuery,
+  TasksQueryVariables,
+  TasksDocument,
+  TaskStatus
+} from '../generated/graphql';
 import Link from 'next/link';
+import { isApolloError } from 'apollo-boost';
 
-interface Props {
+interface MutationProps {
+  deleteTask?: DeleteTaskMutationFn;
+}
+
+interface ExposedProps {
   tasks: Task[];
 }
 
-export const TaskList: React.FunctionComponent<Props> = ({ tasks }) => {
+type AllProps = MutationProps & ExposedProps;
+
+const TaskList: React.FunctionComponent<AllProps> = ({ tasks, deleteTask }) => {
+  const deleteTaskById = async (id: number) => {
+    if (deleteTask) {
+      try {
+        await deleteTask({
+          variables: { id },
+          update: (cache, result) => {
+            if (result.data && result.data.deleteTask) {
+              const tasksCache = cache.readQuery<
+                TasksQuery,
+                TasksQueryVariables
+              >({
+                query: TasksDocument,
+                variables: { status: TaskStatus.Active }
+              });
+              if (tasksCache) {
+                cache.writeQuery<TasksQuery, TasksQueryVariables>({
+                  query: TasksDocument,
+                  variables: { status: TaskStatus.Active },
+                  data: {
+                    tasks: tasksCache.tasks.filter(task => task.id !== id)
+                  }
+                });
+              }
+            }
+          }
+        });
+      } catch (e) {
+        if (isApolloError(e) && e.networkError) {
+          alert('A network error occurred.');
+        } else {
+          alert('An error occurred. Please try again.');
+        }
+      }
+    }
+  };
   return (
     <ul>
       {tasks.map(task => {
@@ -17,6 +67,12 @@ export const TaskList: React.FunctionComponent<Props> = ({ tasks }) => {
                 <a>{task.title}</a>
               </Link>
             </div>
+            <button
+              onClick={() => deleteTaskById(task.id)}
+              className="deleteButton"
+            >
+              &times;
+            </button>
           </li>
         );
       })}
@@ -48,7 +104,32 @@ export const TaskList: React.FunctionComponent<Props> = ({ tasks }) => {
         .title a:hover {
           color: #7694f5;
         }
+        .deleteButton {
+          background: #dde5ff;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          color: #7694f5;
+          flex-shrink: 0;
+          font-size: 12px;
+          font-weight: bold;
+          height: 20px;
+          line-height: 18px;
+          margin: 0 0 0 auto;
+          outline: 0;
+          padding: 0;
+          text-align: center;
+          width: 20px;
+        }
+        .deleteButton:hover {
+          background: #7694f5;
+          color: white;
+        }
       `}</style>
     </ul>
   );
 };
+
+export default withDeleteTask<ExposedProps, MutationProps>({
+  props: ({ mutate }) => ({ deleteTask: mutate })
+})(TaskList);
