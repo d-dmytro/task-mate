@@ -1,7 +1,6 @@
 import React from 'react';
 import { NextPage } from 'next';
-import gql from 'graphql-tag';
-import { Query } from 'react-apollo';
+import { TasksComponent, TaskStatus } from '../generated/graphql';
 
 interface InitialProps {
   greeting: string;
@@ -9,34 +8,9 @@ interface InitialProps {
 
 interface Props extends InitialProps {}
 
-const tasksQuery = gql`
-  query Tasks($status: TaskStatus) {
-    tasks(status: $status) {
-      id
-      title
-      status
-    }
-  }
-`;
-
-interface TasksQuery {
-  tasks: {
-    id: number;
-    title: string;
-    status: string;
-  }[];
-}
-
-interface TasksQueryVariables {
-  status: string;
-}
-
 const IndexPage: NextPage<Props, InitialProps> = props => {
   return (
-    <Query<TasksQuery, TasksQueryVariables>
-      query={tasksQuery}
-      variables={{ status: 'active' }}
-    >
+    <TasksComponent variables={{ status: TaskStatus.Active }}>
       {({ loading, error, data }) => {
         if (loading) {
           return <p>Loading.</p>;
@@ -54,7 +28,7 @@ const IndexPage: NextPage<Props, InitialProps> = props => {
           </ul>
         );
       }}
-    </Query>
+    </TasksComponent>
   );
 };
 
