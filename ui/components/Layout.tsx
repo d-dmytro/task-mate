@@ -4,11 +4,13 @@ import Link from 'next/link';
 export const Layout: React.FunctionComponent = ({ children }) => {
   return (
     <div className="pageContainer">
-      <Link href="/">
-        <a className="logo">
-          <img src="/static/logo.png" />
-        </a>
-      </Link>
+      <div className="logo">
+        <Link href="/">
+          <a>
+            <img src="/static/logo.png" />
+          </a>
+        </Link>
+      </div>
       {children}
       <style jsx global>{`
         html {

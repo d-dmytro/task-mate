@@ -2,6 +2,7 @@ import React from 'react';
 import { NextPage } from 'next';
 import { TasksComponent, TaskStatus } from '../generated/graphql';
 import { Layout } from '../components/Layout';
+import { TaskList } from '../components/TaskList';
 
 interface InitialProps {
   greeting: string;
@@ -22,13 +23,7 @@ const IndexPage: NextPage<Props, InitialProps> = props => {
 
           const tasks = data && data.tasks ? data.tasks : [];
 
-          return (
-            <ul>
-              {tasks.map(task => {
-                return <li key={task.id}>{task.title}</li>;
-              })}
-            </ul>
-          );
+          return <TaskList tasks={tasks} />;
         }}
       </TasksComponent>
     </Layout>
