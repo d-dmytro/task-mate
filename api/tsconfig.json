@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "outDir": "dist",
+    "lib": ["dom", "es2017", "esnext.asynciterable"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitAny": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*"]
+}
