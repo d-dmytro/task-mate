@@ -2,6 +2,7 @@ import React from 'react';
 import { NextPage } from 'next';
 import { Layout } from '../components/Layout';
 import { TaskComponent } from '../generated/graphql';
+import UpdateTaskForm from '../components/UpdateTaskForm';
 
 interface InitialProps {
   id: number;
@@ -24,7 +25,12 @@ const UpdatePage: NextPage<AllProps, InitialProps> = ({ id }) => {
             const task = data && data.task ? data.task : null;
 
             return task ? (
-              <div>{task.title}</div>
+              <UpdateTaskForm
+                initialInput={{
+                  id: task.id,
+                  title: task.title
+                }}
+              />
             ) : (
               <p>Could not find the task.</p>
             );
