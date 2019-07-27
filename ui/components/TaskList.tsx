@@ -30,12 +30,6 @@ export const TaskList: React.FunctionComponent<Props> = ({ tasks }) => {
         li + li {
           margin-top: -1px;
         }
-        li:first-child {
-          border-radius: 4px 4px 0 0;
-        }
-        li:last-child {
-          border-radius: 0 0 4px 4px;
-        }
         li:nth-child(odd) {
           background: #fcfdff;
         }

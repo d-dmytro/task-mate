@@ -3,6 +3,7 @@ import { NextPage } from 'next';
 import { TasksComponent, TaskStatus } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import { TaskList } from '../components/TaskList';
+import CreateTaskForm from '../components/CreateTaskForm';
 
 interface InitialProps {
   greeting: string;
@@ -23,7 +24,12 @@ const IndexPage: NextPage<Props, InitialProps> = props => {
 
           const tasks = data && data.tasks ? data.tasks : [];
 
-          return <TaskList tasks={tasks} />;
+          return (
+            <>
+              <CreateTaskForm />
+              <TaskList tasks={tasks} />
+            </>
+          );
         }}
       </TasksComponent>
     </Layout>
