@@ -1,18 +1,23 @@
 import React from 'react';
 import {
   Task,
-  withDeleteTask,
   DeleteTaskMutationFn,
   TasksQuery,
   TasksQueryVariables,
   TasksDocument,
   TaskStatus,
-  withChangeStatus,
-  ChangeStatusMutationFn
+  ChangeStatusMutationFn,
+  DeleteTaskMutation,
+  DeleteTaskMutationVariables,
+  DeleteTaskDocument,
+  ChangeStatusMutation,
+  ChangeStatusMutationVariables,
+  ChangeStatusDocument
 } from '../generated/graphql';
 import Link from 'next/link';
 import { isApolloError } from 'apollo-boost';
 import { ITaskFilter } from './TaskFilter';
+import { graphql } from '@apollo/react-hoc';
 
 interface MutationProps {
   deleteTask?: DeleteTaskMutationFn;
@@ -215,10 +220,20 @@ const TaskList: React.FunctionComponent<AllProps> = ({
   );
 };
 
-export default withChangeStatus<ExposedProps, MutationProps>({
+const WithDeleteTask = graphql<
+  ExposedProps,
+  DeleteTaskMutation,
+  DeleteTaskMutationVariables,
+  MutationProps
+>(DeleteTaskDocument, {
+  props: ({ mutate }) => ({ deleteTask: mutate })
+})(TaskList);
+
+export default graphql<
+  ExposedProps,
+  ChangeStatusMutation,
+  ChangeStatusMutationVariables,
+  MutationProps
+>(ChangeStatusDocument, {
   props: ({ mutate }) => ({ changeStatus: mutate })
-})(
-  withDeleteTask<ExposedProps, MutationProps>({
-    props: ({ mutate }) => ({ deleteTask: mutate })
-  })(TaskList)
-);
+})(WithDeleteTask);

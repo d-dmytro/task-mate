@@ -1,7 +1,6 @@
 import React from 'react';
 import initApollo, { MyApolloClientCache } from './init-apollo';
 import Head from 'next/head';
-import { getDataFromTree } from 'react-apollo';
 import OriginalApp, { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { ApolloClient } from 'apollo-boost';
 
@@ -33,6 +32,7 @@ export default (App: typeof OriginalApp) => {
       if (typeof window === 'undefined') {
         try {
           // Run all GraphQL queries
+          const { getDataFromTree } = await import('@apollo/react-ssr');
           await getDataFromTree(
             <App
               {...appProps}
