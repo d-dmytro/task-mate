@@ -1,83 +1,31 @@
 import React from 'react';
 import {
   Task,
-  DeleteTaskMutationFn,
   TasksQuery,
   TasksQueryVariables,
   TasksDocument,
   TaskStatus,
-  ChangeStatusMutationFn,
-  DeleteTaskMutation,
-  DeleteTaskMutationVariables,
-  DeleteTaskDocument,
-  ChangeStatusMutation,
-  ChangeStatusMutationVariables,
-  ChangeStatusDocument
+  useDeleteTaskMutation,
+  useChangeStatusMutation
 } from '../generated/graphql';
 import Link from 'next/link';
 import { isApolloError } from 'apollo-boost';
 import { ITaskFilter } from './TaskFilter';
-import { graphql } from '@apollo/react-hoc';
 
-interface MutationProps {
-  deleteTask?: DeleteTaskMutationFn;
-  changeStatus?: ChangeStatusMutationFn;
-}
-
-interface ExposedProps {
+interface Props {
   tasks: Task[];
   filter: ITaskFilter;
 }
 
-type AllProps = MutationProps & ExposedProps;
-
-const TaskList: React.FunctionComponent<AllProps> = ({
-  tasks,
-  deleteTask,
-  changeStatus,
-  filter
-}) => {
+const TaskList: React.FunctionComponent<Props> = ({ tasks, filter }) => {
+  const [deleteTask] = useDeleteTaskMutation();
+  const [changeStatus] = useChangeStatusMutation();
   const deleteTaskById = async (id: number) => {
-    if (deleteTask) {
-      try {
-        await deleteTask({
-          variables: { id },
-          update: (cache, result) => {
-            if (result.data && result.data.deleteTask) {
-              const tasksCache = cache.readQuery<
-                TasksQuery,
-                TasksQueryVariables
-              >({
-                query: TasksDocument,
-                variables: filter
-              });
-              if (tasksCache) {
-                cache.writeQuery<TasksQuery, TasksQueryVariables>({
-                  query: TasksDocument,
-                  variables: filter,
-                  data: {
-                    tasks: tasksCache.tasks.filter(task => task.id !== id)
-                  }
-                });
-              }
-            }
-          }
-        });
-      } catch (e) {
-        if (isApolloError(e) && e.networkError) {
-          alert('A network error occurred.');
-        } else {
-          alert('An error occurred. Please try again.');
-        }
-      }
-    }
-  };
-  const changeTaskStatusById = async (id: number, status: TaskStatus) => {
-    if (changeStatus) {
-      await changeStatus({
-        variables: { id, status },
+    try {
+      await deleteTask({
+        variables: { id },
         update: (cache, result) => {
-          if (filter.status && result.data && result.data.changeStatus) {
+          if (result.data && result.data.deleteTask) {
             const tasksCache = cache.readQuery<TasksQuery, TasksQueryVariables>(
               {
                 query: TasksDocument,
@@ -89,16 +37,44 @@ const TaskList: React.FunctionComponent<AllProps> = ({
                 query: TasksDocument,
                 variables: filter,
                 data: {
-                  tasks: tasksCache.tasks.filter(
-                    task => task.status === filter.status
-                  )
+                  tasks: tasksCache.tasks.filter(task => task.id !== id)
                 }
               });
             }
           }
         }
       });
+    } catch (e) {
+      if (isApolloError(e) && e.networkError) {
+        alert('A network error occurred.');
+      } else {
+        alert('An error occurred. Please try again.');
+      }
     }
+  };
+  const changeTaskStatusById = async (id: number, status: TaskStatus) => {
+    await changeStatus({
+      variables: { id, status },
+      update: (cache, result) => {
+        if (filter.status && result.data && result.data.changeStatus) {
+          const tasksCache = cache.readQuery<TasksQuery, TasksQueryVariables>({
+            query: TasksDocument,
+            variables: filter
+          });
+          if (tasksCache) {
+            cache.writeQuery<TasksQuery, TasksQueryVariables>({
+              query: TasksDocument,
+              variables: filter,
+              data: {
+                tasks: tasksCache.tasks.filter(
+                  task => task.status === filter.status
+                )
+              }
+            });
+          }
+        }
+      }
+    });
   };
   return (
     <ul>
@@ -220,20 +196,4 @@ const TaskList: React.FunctionComponent<AllProps> = ({
   );
 };
 
-const WithDeleteTask = graphql<
-  ExposedProps,
-  DeleteTaskMutation,
-  DeleteTaskMutationVariables,
-  MutationProps
->(DeleteTaskDocument, {
-  props: ({ mutate }) => ({ deleteTask: mutate })
-})(TaskList);
-
-export default graphql<
-  ExposedProps,
-  ChangeStatusMutation,
-  ChangeStatusMutationVariables,
-  MutationProps
->(ChangeStatusDocument, {
-  props: ({ mutate }) => ({ changeStatus: mutate })
-})(WithDeleteTask);
+export default TaskList;

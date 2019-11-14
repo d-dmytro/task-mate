@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { withCreateTask, CreateTaskProps } from '../generated/graphql';
+import { useCreateTaskMutation } from '../generated/graphql';
 
 interface FormState {
   title: string;
@@ -9,16 +9,11 @@ const defaultState: FormState = {
   title: ''
 };
 
-interface ExposedProps {
+interface Props {
   onTaskCreated: () => void;
 }
 
-type AllProps = CreateTaskProps<ExposedProps>;
-
-const CreateTaskForm: React.FunctionComponent<AllProps> = ({
-  mutate,
-  onTaskCreated
-}) => {
+const CreateTaskForm: React.FunctionComponent<Props> = ({ onTaskCreated }) => {
   const [formState, setFormState] = useState<FormState>(defaultState);
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -26,18 +21,18 @@ const CreateTaskForm: React.FunctionComponent<AllProps> = ({
       title: value
     });
   };
+  const [createTask] = useCreateTaskMutation();
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (mutate) {
-      const result = await mutate({
-        variables: { input: formState }
+
+    const result = await createTask({
+      variables: { input: formState }
+    });
+    if (result && result.data && result.data.createTask) {
+      setFormState({
+        title: ''
       });
-      if (result && result.data && result.data.createTask) {
-        setFormState({
-          title: ''
-        });
-        onTaskCreated();
-      }
+      onTaskCreated();
     }
   };
   return (
@@ -75,4 +70,4 @@ const CreateTaskForm: React.FunctionComponent<AllProps> = ({
   );
 };
 
-export default withCreateTask<ExposedProps>()(CreateTaskForm);
+export default CreateTaskForm;
