@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NextPage } from 'next';
 import { Layout } from '../components/Layout';
-import { TaskComponent } from '../generated/graphql';
+import {
+  TaskComponent,
+  useTaskQuery,
+  useTaskLazyQuery
+} from '../generated/graphql';
 import UpdateTaskForm from '../components/UpdateTaskForm';
 
 interface InitialProps {
@@ -11,31 +15,32 @@ interface InitialProps {
 interface AllProps extends InitialProps {}
 
 const UpdatePage: NextPage<AllProps, InitialProps> = ({ id }) => {
+  const [getTask, { loading, error, data }] = useTaskLazyQuery({
+    variables: { id }
+  });
+  useEffect(() => {
+    if (id) {
+      getTask();
+    }
+  }, []);
+  const task = data && data.task ? data.task : null;
   return (
     <Layout>
       {id ? (
-        <TaskComponent variables={{ id }}>
-          {({ loading, error, data }) => {
-            if (loading) {
-              return <p>Loading.</p>;
-            } else if (error) {
-              return <p>An error occurrred.</p>;
-            }
-
-            const task = data && data.task ? data.task : null;
-
-            return task ? (
-              <UpdateTaskForm
-                initialInput={{
-                  id: task.id,
-                  title: task.title
-                }}
-              />
-            ) : (
-              <p>Could not find the task.</p>
-            );
-          }}
-        </TaskComponent>
+        loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p>An error occurrred.</p>
+        ) : task ? (
+          <UpdateTaskForm
+            initialInput={{
+              id: task.id,
+              title: task.title
+            }}
+          />
+        ) : (
+          <p>Could not find the task.</p>
+        )
       ) : (
         <p>Invalid id.</p>
       )}
