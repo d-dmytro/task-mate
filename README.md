@@ -1,4 +1,4 @@
-# Using TypeScript with React - Sample Project - Task Mate
+# [LEGACY] Using TypeScript with React - Sample Project - Task Mate
 
 This repo contains the source code for the sample Next.js app we're going to build in the course "Using TypeScript with React".
 
